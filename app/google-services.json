@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "262965977788",
+    "firebase_url": "https://degans-corona-tracker.firebaseio.com",
+    "project_id": "degans-corona-tracker",
+    "storage_bucket": "degans-corona-tracker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:262965977788:android:7d81b15ea1ea2733f066b9",
+        "android_client_info": {
+          "package_name": "com.deGans.coronaTracker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "262965977788-fa7kmu1a0o0mptkhqg48nr7qg1v6aums.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAUlUiStiUtp9squ7hq3E6U_sfAgEFJeHI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "262965977788-fa7kmu1a0o0mptkhqg48nr7qg1v6aums.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
