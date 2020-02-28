@@ -12,8 +12,8 @@ public interface LocationDao {
     @Query("SELECT * FROM locations")
     List<LocationDto> getAll();
 
-//    @Query("SELECT * FROM locations WHERE locations IN (:userIds)")
-//    List<User> loadAllByIds(int[] userIds);
+    @Query("SELECT * FROM locations WHERE time > :timestampInMillis")
+    List<LocationDto> loadAfterTime(long timestampInMillis);
 
 //    @Query("SELECT * FROM user WHERE first_name LIKE :first AND " +
 //            "last_name LIKE :last LIMIT 1")

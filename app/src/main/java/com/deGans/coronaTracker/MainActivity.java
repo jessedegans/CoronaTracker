@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,8 +28,11 @@ import android.provider.Settings.Secure;
 
 import com.deGans.coronaTracker.BackgroundServices.CurrentLocationService;
 import com.deGans.coronaTracker.Database.AppDatabase;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.wajahatkarim3.roomexplorer.RoomExplorerActivity;
 
 import static com.wajahatkarim3.roomexplorer.RoomExplorerActivity.DATABASE_CLASS_KEY;
@@ -52,25 +56,15 @@ public class MainActivity extends AppCompatActivity {
         android_id = Secure.getString(getApplicationContext().getContentResolver(),
                 Secure.ANDROID_ID);
 
-        receiver  = new BroadcastReceiver() {
+        receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(intent.getAction().equals(RECEIVE_JSON)) {
+                if (intent.getAction().equals(RECEIVE_JSON)) {
                     Provider = intent.getStringExtra("Provider");
-                    Latitude = (Double)intent.getExtras().get("Latitude");
-                    Longitude = (Double)intent.getExtras().get("Longitude");
-                    txtAddress.setText("Provider : "+Provider);
+                    Latitude = (Double) intent.getExtras().get("Latitude");
+                    Longitude = (Double) intent.getExtras().get("Longitude");
+                    txtAddress.setText("Provider : " + Provider);
                     txtCoordinates.setText("Lat:" + Latitude + " ,Long:" + Longitude);
-
-                    FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    txtAddress.setText("Provider : "+Provider);
-                    DatabaseReference myRef = database.getReference("current").child(android_id).child("coordinates");
-                    myRef.child("0").setValue(Latitude);
-                    myRef.child("1").setValue(Longitude);
-
-                    DatabaseReference historyRef = database.getReference("history").child(android_id).child(String.valueOf(System.currentTimeMillis()));
-                    historyRef.child("0").setValue(Latitude);
-                    historyRef.child("1").setValue(Longitude);
                 }
             }
         };
@@ -84,17 +78,26 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED) {
-        } else{
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] {
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION },
+                            Manifest.permission.ACCESS_COARSE_LOCATION},
                     1);
         }
-        ActivityCompat.requestPermissions(MainActivity.this, new String[] {
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                         Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION },
+                        Manifest.permission.ACCESS_COARSE_LOCATION},
                 1);
+        InitSubscribe();
+    }
 
+    private void InitSubscribe(){
+        FirebaseMessaging.getInstance().subscribeToTopic("all").addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(getApplicationContext(),"Success subscribed",Toast.LENGTH_LONG).show();
+            }
+        });
     }
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
@@ -136,7 +139,6 @@ public class MainActivity extends AppCompatActivity {
                                     Manifest.permission.ACCESS_COARSE_LOCATION },
                             1);
 
-                }else{
                 }
             }
         });

@@ -89,8 +89,8 @@ public class CurrentLocationService extends Service
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
             }
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, THIRTY_SECONDS, 0, listener);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, THIRTY_SECONDS, 0, listener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, FIVE_MINUTES, 1000, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, FIVE_MINUTES, 1000, listener);
         }
     }
 
@@ -108,8 +108,8 @@ public class CurrentLocationService extends Service
 
         // Check whether the new location fix is newer or older
         long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > THIRTY_SECONDS;
-        boolean isSignificantlyOlder = timeDelta < -THIRTY_SECONDS;
+        boolean isSignificantlyNewer = timeDelta > FIVE_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -FIVE_MINUTES;
         boolean isNewer = timeDelta > 0;
 
         // If it's been more than two minutes since the current location, use the new location
@@ -204,7 +204,7 @@ public class CurrentLocationService extends Service
                 };
                 performOnBackgroundThread(UpdateDbRunnable);
 
-
+                //send broadcasts to services
 
                 intent.putExtra("Latitude", loc.getLatitude());
                 intent.putExtra("Longitude", loc.getLongitude());
