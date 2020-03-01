@@ -4,6 +4,8 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RawQuery;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.List;
 
@@ -18,6 +20,9 @@ public interface LocationDao {
 
     @Query("SELECT * FROM locations WHERE time > :timestampInMillis")
     List<LocationDto> loadAfterTime(long timestampInMillis);
+
+    @RawQuery
+    int checkpoint(SupportSQLiteQuery supportSQLiteQuery);
 
 //    @Query("SELECT * FROM user WHERE first_name LIKE :first AND " +
 //            "last_name LIKE :last LIMIT 1")

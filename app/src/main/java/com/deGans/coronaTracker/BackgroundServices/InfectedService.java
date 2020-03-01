@@ -18,8 +18,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
+import androidx.sqlite.db.SimpleSQLiteQuery;
 
 import com.deGans.coronaTracker.Database.AppDatabase;
+import com.deGans.coronaTracker.Models.LocationDao;
 import com.deGans.coronaTracker.R;
 import com.google.android.gms.auth.api.signin.internal.Storage;
 import com.google.android.gms.tasks.Continuation;
@@ -56,7 +58,7 @@ public class InfectedService extends Service {
         intent = new Intent(BROADCAST_ACTION);
         Toast.makeText(getApplicationContext(),"Corona Tracker is running...",Toast.LENGTH_SHORT).show();
         db = Room.databaseBuilder(getApplicationContext(),
-                AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().build();
+                AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().allowMainThreadQueries().build();
         if (Build.VERSION.SDK_INT >= 26) {
             String CHANNEL_ID = "coronatracker1";
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
@@ -105,6 +107,10 @@ public class InfectedService extends Service {
     public void UploadLocationHistoryToCloud(){
         String currentDBPath = getDatabasePath("CoronaDB").getAbsolutePath();
         //upload file on this location
+
+        //apparently we have to do some little trick to get locations
+        db.locationDao().checkpoint(new SimpleSQLiteQuery("pragma wal_checkpoint(full)"));
+
 
         String uniqueID = Settings.Secure.getString(getApplicationContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);

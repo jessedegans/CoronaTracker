@@ -54,7 +54,7 @@ import static com.wajahatkarim3.roomexplorer.RoomExplorerActivity.DATABASE_NAME_
 public class MainActivity extends AppCompatActivity {
 
     public static final String RECEIVE_JSON = "com.deGans.coronaTracker.RECEIVE_JSON";
-    Button btnSeeDb, btnGotCorona;
+    Button btnSeeDb, btnGotCorona, btnConfirmCorona, btnFalseAlarm;
     Double Latitude, Longitude;
     String Provider;
     BroadcastReceiver receiver;
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         InitSubscribe();
         initTexts();
         setBottomNavigationListeners();
-        debugButtons();
+        //debugButtons();
 
 
     }
@@ -86,10 +86,7 @@ public class MainActivity extends AppCompatActivity {
         statusSubtitle.setText(getRightStatusSubtitleText());
 
     }
-    private void debugButtons(){
-        btnGotCorona.setVisibility(View.VISIBLE);
-        btnSeeDb.setVisibility(View.VISIBLE);
-    }
+
     private void setBottomNavigationListeners(){
         final BottomNavigationView itemView = findViewById(R.id.bottom_navigation);
         itemView.setOnNavigationItemSelectedListener(
@@ -139,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
         //set color filter of bg image
         bgImage.setColorFilter(Color.parseColor(getRightIconColor()));
 
+
+
         itemView.setSelectedItemId(R.id.overview);
 
         //change notificationbar color
@@ -146,6 +145,16 @@ public class MainActivity extends AppCompatActivity {
             Window window = getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(Color.parseColor(getRightBackgroundAccentColor()));
+        }
+
+        //show buttons or not
+        SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
+        if(sharedPrefs.getInt("corona_status",0) == 1) {
+            btnFalseAlarm.setVisibility(View.VISIBLE);
+            btnConfirmCorona.setVisibility(View.VISIBLE);
+        } else{
+            btnFalseAlarm.setVisibility(View.GONE);
+            btnConfirmCorona.setVisibility(View.GONE);
         }
     }
     private String getRightStatusText(){
@@ -155,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 return "Actively searching...";
 
             case 1:
-                return "Possible infection detected";
+                return "Possible infection detected, please confirm";
 
             case 2:
                 //def infected
@@ -171,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
                 return "No contact with a corona patient detected";
 
             case 1:
-                return "If you feel sick. Please seek medical attention ASAP \n and confirm so we can inform people who may have been in contact with you";
+                return "If you feel sick, please seek medical attention. \n Please confirm so we can inform people who may have been in contact with you";
 
             case 2:
                 //def infected
@@ -291,39 +300,62 @@ public class MainActivity extends AppCompatActivity {
     private void initReference() {
         btnSeeDb = (Button)findViewById(R.id.btnSeeDb);
         btnGotCorona = (Button)findViewById(R.id.CoronaIhave);
+        btnConfirmCorona = (Button)findViewById(R.id.confirmCorona);
+        btnFalseAlarm = (Button)findViewById(R.id.falseAlarm);
 
     }
 
     private void initListener() {
-        btnSeeDb.setOnClickListener(new View.OnClickListener() {
+        btnFalseAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                openDbView();
+                falseAlarm();
             }
         });
-        btnGotCorona.setOnClickListener(new View.OnClickListener() {
+
+        btnConfirmCorona.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
-                SharedPreferences.Editor ed;
-                ed = sharedPrefs.edit();
-
-                //Indicate that the default shared prefs have been set
-                ed.putInt("corona_status", 2);
-
-                ed.apply();
-
-                Intent intent = new Intent(MainActivity.this, InfectedService.class);
-                Log.i ("XXXXXXXXXXXXXXX", "Starting InfectedService");
-                if (Build.VERSION.SDK_INT >= 26) {
-                    startForegroundService(intent);
-                } else {
-                    // Pre-O behavior.
-                    startService(intent);
-                }
+                confirmCorona();
             }
         });
     }
+    public void falseAlarm(){
+        SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
+        SharedPreferences.Editor ed;
+        ed = sharedPrefs.edit();
+
+        //Indicate that the default shared prefs have been set
+        ed.putInt("corona_status", 0);
+
+        ed.apply();
+
+        initStyle();
+        initTexts();
+    }
+    public void confirmCorona(){
+        SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
+        SharedPreferences.Editor ed;
+        ed = sharedPrefs.edit();
+
+        //Indicate that the default shared prefs have been set
+        ed.putInt("corona_status", 2);
+
+        ed.apply();
+        Intent intent = new Intent(MainActivity.this, InfectedService.class);
+        Log.i ("XXXXXXXXXXXXXXX", "Starting InfectedService");
+        if (Build.VERSION.SDK_INT >= 26) {
+            startForegroundService(intent);
+        } else {
+            // Pre-O behavior.
+            startService(intent);
+        }
+
+        initStyle();
+        initTexts();
+    }
+
+
 
     public void openDbView(){
         if (BuildConfig.DEBUG) {
@@ -373,6 +405,35 @@ public class MainActivity extends AppCompatActivity {
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+    private void debugButtons(){
+        btnGotCorona.setVisibility(View.VISIBLE);
+        btnSeeDb.setVisibility(View.VISIBLE);
+        btnSeeDb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                openDbView();
+            }
+        });
+
+        btnGotCorona.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
+                SharedPreferences.Editor ed;
+                ed = sharedPrefs.edit();
+
+                //Indicate that the default shared prefs have been set
+                ed.putInt("corona_status", 1);
+                ed.putString("infect_loc_lat", "52.082920");
+                ed.putString("infect_loc_lon", "6.148990");
+                ed.putLong("infect_time", 1583090413544L);
+                ed.putString("infect_reason", "DEVICE");
+                ed.apply();
+                initStyle();
+                initTexts();
+            }
+        });
     }
 
 }

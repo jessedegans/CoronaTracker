@@ -3,7 +3,9 @@ package com.deGans.coronaTracker.BackgroundServices;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +16,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 
@@ -245,19 +248,55 @@ public class HistoryBacktraceService extends Service {
 
         ed.apply();
 
-        Intent intent = new Intent(HistoryBacktraceService.this, InfectedService.class);
-        Log.i ("XXXXXXXXXXXXXXX", "Starting InfectedService");
-        if (Build.VERSION.SDK_INT >= 26) {
-            startForegroundService(intent);
-        } else {
-            // Pre-O behavior.
-            startService(intent);
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+            showCoronaDetectedNotificationOreo();
+        } else{
+            showCoronaDetectedNotification();
         }
         // Stop foreground service and remove the notification.
         stopForeground(true);
 
         // Stop the foreground service.
         stopSelf();
+
+    }
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void showCoronaDetectedNotificationOreo() {
+        CharSequence name = "Corona Tracker";
+        String description = "Keeps you safe.";
+        int importance  = NotificationManager.IMPORTANCE_HIGH;
+
+        NotificationChannel channel = new NotificationChannel("Corona Tracker", name, importance);
+        channel.setDescription(description);
+
+        NotificationManager notificationManager1 = getSystemService(NotificationManager.class);
+        notificationManager1.createNotificationChannel(channel);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), channel.getId())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("CORONA HAS BEEN DETECTED.")
+                .setContentText("Please seek medical attention and confirm in the app so we can warn other users")
+                .setVibrate(new long[] {1000, 1000})
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        notificationManager1.notify(100, builder.build());
+
+    }
+    public void showCoronaDetectedNotification() {
+        CharSequence name = "Corona Tracker";
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        int notifyId = 1;
+        String channelId = "some_channel_id";
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), "Corona Tracker")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("CORONA HAS BEEN DETECTED.")
+                .setContentText("Please seek medical attention and confirm in the app so we can warn other users")
+                .setVibrate(new long[] {1000, 1000})
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        notificationManager.notify(100, builder.build());
 
     }
     public static Thread performOnBackgroundThread(final Runnable runnable) {
