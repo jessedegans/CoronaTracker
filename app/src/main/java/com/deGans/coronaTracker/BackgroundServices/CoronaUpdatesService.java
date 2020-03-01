@@ -47,7 +47,7 @@ public class CoronaUpdatesService extends FirebaseMessagingService {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
+            Log.d(TAG, "YES: " + params.get("url"));
             JSONArray data = null;
             try {
                 data = new JSONArray(newCovidData);
@@ -57,6 +57,11 @@ public class CoronaUpdatesService extends FirebaseMessagingService {
             //create intent
             Intent intent = new Intent(CoronaUpdatesService.this, HistoryBacktraceService.class);
             intent.putExtra("data", data.toString());
+            if(params.get("dataUpdate").equals("DEVICE")){
+                intent.putExtra("isDevice", true);
+            } else{
+                intent.putExtra("isDevice", false);
+            }
             if (Build.VERSION.SDK_INT >= 26) {
                 startForegroundService(intent);
             } else {

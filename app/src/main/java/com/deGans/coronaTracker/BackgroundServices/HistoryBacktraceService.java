@@ -40,7 +40,7 @@ public class HistoryBacktraceService extends Service {
 //      should be callin firebase right here
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
-        Toast.makeText(getApplicationContext(),"Corona Tracker is running...",Toast.LENGTH_SHORT).show();
+        Toast.makeText(getApplicationContext(),"Backtracing service is running...",Toast.LENGTH_SHORT).show();
         db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().build();
         if (Build.VERSION.SDK_INT >= 26) {
@@ -64,40 +64,65 @@ public class HistoryBacktraceService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startid)
     {
-        if(intent.hasExtra("data")) {
-            String jsonArrayString = intent.getStringExtra("data");
-            try {
-                data = new JSONArray(jsonArrayString);
-                ArrayList<LocationDto> covidLocs = new ArrayList<>();
-                //parse
-                for (int i=0;i<data.length();i++)
-                {
-                    LocationDto covidLoc = new LocationDto();
-                    JSONObject o = data.optJSONObject(i);
-                    covidLoc.latitude=o.optDouble("lat");
-                    covidLoc.longitude=o.optDouble("lon");
+        SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
 
-                    covidLocs.add(covidLoc);
+        //first check if this device is infected alreayd
+        if(sharedPrefs.getInt("corona_status",0) != 2){
+            //if not then proceed with checking if extra intent with data is send
+            if(intent.hasExtra("data")) {
+                String jsonArrayString = intent.getStringExtra("data");
+                try {
+                    data = new JSONArray(jsonArrayString);
+                    ArrayList<LocationDto> covidLocs = new ArrayList<>();
+                    //parse
+                    for (int i=0;i<data.length();i++)
+                    {
+                        LocationDto covidLoc = new LocationDto();
+                        JSONObject o = data.optJSONObject(i);
+                        covidLoc.latitude=o.optDouble("lat");
+                        covidLoc.longitude=o.optDouble("lon");
+                        if(intent.getBooleanExtra("isDevice",false)){
+                            covidLoc.time = o.optLong("time");
+                        }
+
+                        covidLocs.add(covidLoc);
+                    }
+
+                    //determine if its deivce or WHO
+                    if(intent.hasExtra("isDevice")){
+                        //if its a device run different algoritm
+                        if(intent.getBooleanExtra("isDevice",false)){
+                            DoBacktraceDevice(covidLocs);
+                        } else{
+
+                            DoBackTraceWHO(covidLocs);
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-                DoBackTraceWHO(covidLocs);
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
+        } else{
+            // Stop foreground service and remove the notification.
+            stopForeground(true);
+
+            // Stop the foreground service.
+            stopSelf();
+
         }
+
         return startid;
     }
     public void DoBackTraceWHO(final ArrayList<LocationDto> data){
-        Log.i ("XXXXXXXXXXXXXXX", "Starting backtracing service");
+        Log.i ("XXXXXXXXXXXXXXX", "Starting WHO backtracing service");
         final long lastchecked = getLastChecked();
         //only get records from db that are higher than last time we checked
         final Runnable UpdateDbRunnable = new Runnable() {
             public void run() {
                 List<LocationDto> recentLocations = db.locationDao().loadAfterTime(lastchecked);
                 ArrayList<LocationDto> infectedLocations = data;
-                Log.i("*********************", "List contains:"+ data.toArray().toString());
 
                 for(LocationDto infectedLoc: infectedLocations){
-
                     for(LocationDto recentLoc : recentLocations){
 
                         float[] results = new float[1];
@@ -108,7 +133,7 @@ public class HistoryBacktraceService extends Service {
 
                         boolean isWithin10km = distanceInMeters < 10000;
                         if(isWithin10km){
-                            CoronaDetected();
+                            CoronaDetected(recentLoc, "WHO");
                         }
                     }
                 }
@@ -123,17 +148,102 @@ public class HistoryBacktraceService extends Service {
         performOnBackgroundThread(UpdateDbRunnable);
 
     }
-    public void CoronaDetected(){
+    public void DoBacktraceDevice(final ArrayList<LocationDto> data){
+        Log.i ("XXXXXXXXXXXXXXX", "Starting DEVICE backtracing service");
+        //only get records from db that are higher than last time we checked
+        final Runnable UpdateDbRunnable = new Runnable() {
+            public void run() {
+                List<LocationDto> recentLocations = db.locationDao().getAll();
+                ArrayList<LocationDto> infectedLocations = data;
+
+                for(int i =0; i <  infectedLocations.size(); i++){
+
+                    for(LocationDto recentLoc : recentLocations){
+
+                        float[] results = new float[1];
+
+                        //the time between the current infected loc and the next qualifies the history loc (time wise)
+                        LocationDto curInfectedLoc = infectedLocations.get(i);
+                        LocationDto nextInfectedLoc = infectedLocations.get(i + 1);
+
+                        if(recentLoc.time >= curInfectedLoc.time && recentLoc.time <= nextInfectedLoc.time){
+                            //infection possible time wise // otherwise you would just check the next one
+
+
+                            //calculate distance so the distance that qualifies if the device could be infected
+                            //depends on the time between the curInfectedLoc and the recentLoc.
+                            long timeBetweenInMillis = 0;
+                            //determine highest value
+                            if(curInfectedLoc.time <= recentLoc.time){
+                                timeBetweenInMillis = (recentLoc.time - curInfectedLoc.time);
+                            }
+                            if(curInfectedLoc.time >= recentLoc.time){
+                                timeBetweenInMillis = (curInfectedLoc.time - recentLoc.time);
+                            }
+                            //standard
+                            float distanceInMetersTreshold = 1000;
+                            //seconds to millis is times 1000 right?
+                            //keep in mind that only walkers are infected (walkers on trains and ppl who are in crowds)
+                            if(timeBetweenInMillis <= (60 * 1000)){
+                                //time difference is 1 minute lets say max you can walk in 1 minute is 200 meters
+                                distanceInMetersTreshold = 200;
+                            } else if (timeBetweenInMillis <= (120*1000)){
+                                distanceInMetersTreshold = 400;
+                            } else if(timeBetweenInMillis <= (180 * 1000)){
+                                distanceInMetersTreshold = 600;
+                            } else if(timeBetweenInMillis <= (240 * 1000)){
+                                distanceInMetersTreshold = 800;
+                            } else if(timeBetweenInMillis <= (300 * 1000)){
+                                distanceInMetersTreshold = 1000;
+                            } else if(timeBetweenInMillis <= (360 * 1000)){
+                                distanceInMetersTreshold = 1200;
+                            }
+                            else if(timeBetweenInMillis <= (420 * 1000)){
+                                distanceInMetersTreshold = 1400;
+                            } else{
+                                distanceInMetersTreshold = 1500;
+                            }
+
+
+                            //do some lon lat trick to check if its nearby
+                            Location.distanceBetween(recentLoc.latitude, recentLoc.longitude, curInfectedLoc.latitude, curInfectedLoc.longitude, results);
+                            float distanceInMeters = results[0];
+
+                            boolean isWithinRange = distanceInMeters < distanceInMetersTreshold;
+                            if(isWithinRange){
+                                CoronaDetected(recentLoc, "DEVICE");
+                            }
+                        }
+
+                    }
+                }
+                Log.i ("XXXXXXXXXXXXXXX", "DEVICE backtracing Finished");
+                // Stop foreground service and remove the notification.
+                stopForeground(true);
+
+                // Stop the foreground service.
+                stopSelf();
+
+            }
+        };
+        performOnBackgroundThread(UpdateDbRunnable);
+
+    }
+    public void CoronaDetected(LocationDto location, String dataSource){
+
+        //get shared prefs
         SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
         SharedPreferences.Editor ed;
-        if(!sharedPrefs.contains("corona_status")){
-            ed = sharedPrefs.edit();
+        ed = sharedPrefs.edit();
 
-            //Indicate that the default shared prefs have been set
-            ed.putInt("corona_status", 1);
+        //Indicate that the default shared prefs have been set
+        ed.putInt("corona_status", 1);
+        ed.putString("infect_loc_lat", location.latitude.toString());
+        ed.putString("infect_loc_lat", location.longitude.toString());
+        ed.putLong("infect_time", location.time);
+        ed.putString("infect_reason", dataSource);
 
-            ed.apply();
-        }
+        ed.apply();
 
         Intent intent = new Intent(HistoryBacktraceService.this, InfectedService.class);
         Log.i ("XXXXXXXXXXXXXXX", "Starting InfectedService");
