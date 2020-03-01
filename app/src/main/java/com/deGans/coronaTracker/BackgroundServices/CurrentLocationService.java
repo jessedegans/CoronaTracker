@@ -27,10 +27,6 @@ import com.deGans.coronaTracker.MainActivity;
 import com.deGans.coronaTracker.Models.LocationDto;
 import com.deGans.coronaTracker.R;
 
-/*
-Should check location every five minutes against geofencing local database
-And save to local location history DB
- */
 public class CurrentLocationService extends Service
 {
     public static final String BROADCAST_ACTION = "Hello World";

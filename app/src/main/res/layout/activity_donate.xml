@@ -1,0 +1,56 @@
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+
+    android:background="#DD613C"
+    tools:context=".MainActivity"
+    android:id="@+id/mainBackground">
+
+    <TextView
+        android:id="@+id/donate_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="92dp"
+        android:layout_marginLeft="92dp"
+        android:layout_marginTop="58dp"
+        android:layout_marginEnd="95dp"
+        android:layout_marginRight="95dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="center"
+        android:text="Donate"
+        android:textColor="#fff"
+        android:textSize="30sp" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:fitsSystemWindows="true"
+        android:layout_gravity="bottom"
+        android:background="#a53112"
+        app:itemTextAppearanceActive="@style/BottomNavigationViewTextStyleActive"
+        app:itemTextAppearanceInactive="@style/BottomNavigationViewTextStyle"
+        app:itemIconTint="@drawable/bottom_navigation_item_colors"
+        app:itemTextColor="@drawable/bottom_navigation_item_colors"
+        app:menu="@menu/bottom_menu_items" />
+
+    <WebView
+        android:id="@+id/donateWebView"
+        android:layout_width="match_parent"
+        android:layout_height="539dp"
+        android:layout_alignBottom="@+id/bottom_navigation"
+        android:layout_marginBottom="54dp" />
+
+</RelativeLayout>
+
+

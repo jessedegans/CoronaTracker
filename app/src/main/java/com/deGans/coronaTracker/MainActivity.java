@@ -17,8 +17,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import 	androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import android.util.Log;
 import android.view.Menu;
@@ -34,6 +36,11 @@ import android.widget.Toast;
 import com.deGans.coronaTracker.BackgroundServices.CurrentLocationService;
 import com.deGans.coronaTracker.BackgroundServices.InfectedService;
 import com.deGans.coronaTracker.Database.AppDatabase;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.messaging.FirebaseMessaging;
@@ -65,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
         initPermissions();
         InitSubscribe();
         initTexts();
-//        debugButtons();
+        setBottomNavigationListeners();
+        debugButtons();
 
 
     }
@@ -82,9 +90,43 @@ public class MainActivity extends AppCompatActivity {
         btnGotCorona.setVisibility(View.VISIBLE);
         btnSeeDb.setVisibility(View.VISIBLE);
     }
+    private void setBottomNavigationListeners(){
+        final BottomNavigationView itemView = findViewById(R.id.bottom_navigation);
+        itemView.setOnNavigationItemSelectedListener(
+                new BottomNavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.map:
+                                NavigateTo(MapActivity.class);
+                                break;
+                            case R.id.donate:
+                                NavigateTo(DonateActivity.class);
+                                break;
+                        }
+                        return true;
+                    }
+                });
+    }
+    private void NavigateTo(Class<?> cls){
+        Intent intent = new Intent(this, cls);
+        startActivity(intent);
+        overridePendingTransition(0, 0);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        BottomNavigationView itemView = findViewById(R.id.bottom_navigation);
+        itemView.setSelectedItemId(R.id.overview);
+    }
+
     private void initStyle(){
         View mainView = findViewById(R.id.mainBackground);
         BottomNavigationView itemView = findViewById(R.id.bottom_navigation);
+
+
         ImageView bgImage = findViewById(R.id.imageView);
         // Cast to a TextView instance if the menu item was found
 
@@ -96,6 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
         //set color filter of bg image
         bgImage.setColorFilter(Color.parseColor(getRightIconColor()));
+
+        itemView.setSelectedItemId(R.id.overview);
 
         //change notificationbar color
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -211,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
                 PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(getApplicationContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
                         PackageManager.PERMISSION_GRANTED) {
+
         } else {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -295,21 +340,6 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.bottom_menu_items, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @Override

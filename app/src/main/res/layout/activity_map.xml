@@ -1,0 +1,108 @@
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+
+    android:background="#DD613C"
+    tools:context=".MainActivity"
+    android:id="@+id/mainBackground">
+
+    <fragment
+        android:id="@+id/googleMaps"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="387dp"
+        android:layout_alignBottom="@+id/bottom_navigation"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="290dp"
+        android:layout_marginEnd="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="55dp" />
+
+    <TextView
+        android:id="@+id/map_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="92dp"
+        android:layout_marginLeft="92dp"
+        android:layout_marginTop="99dp"
+        android:layout_marginEnd="95dp"
+        android:layout_marginRight="95dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="center"
+        android:text="Map"
+        android:textColor="#fff"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/infection_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="94dp"
+        android:layout_marginLeft="94dp"
+        android:layout_marginTop="151dp"
+        android:layout_marginEnd="93dp"
+        android:layout_marginRight="93dp"
+        android:gravity="right"
+        android:fontFamily="@font/rubik_medium"
+        android:text="Time of contact: \n Source: "
+        android:textColor="#fff"
+        android:textSize="15sp"
+        android:visibility="visible"/>
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="92dp"
+        android:layout_marginLeft="92dp"
+        android:layout_marginTop="243dp"
+        android:layout_marginEnd="95dp"
+        android:layout_marginRight="95dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="center"
+        android:text="Your last saved location"
+        android:textColor="#fff"
+        android:textSize="18sp" />
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:fitsSystemWindows="true"
+        android:layout_gravity="bottom"
+        android:background="#a53112"
+        app:itemTextAppearanceActive="@style/BottomNavigationViewTextStyleActive"
+        app:itemTextAppearanceInactive="@style/BottomNavigationViewTextStyle"
+        app:itemIconTint="@drawable/bottom_navigation_item_colors"
+        app:itemTextColor="@drawable/bottom_navigation_item_colors"
+        app:menu="@menu/bottom_menu_items" />
+
+</RelativeLayout>
+
+

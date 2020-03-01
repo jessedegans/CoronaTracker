@@ -12,6 +12,10 @@ public interface LocationDao {
     @Query("SELECT * FROM locations")
     List<LocationDto> getAll();
 
+
+    @Query("SELECT * FROM locations WHERE time = (SELECT MAX(time) FROM locations)")
+    LocationDto getLast();
+
     @Query("SELECT * FROM locations WHERE time > :timestampInMillis")
     List<LocationDto> loadAfterTime(long timestampInMillis);
 

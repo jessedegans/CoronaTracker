@@ -239,7 +239,7 @@ public class HistoryBacktraceService extends Service {
         //Indicate that the default shared prefs have been set
         ed.putInt("corona_status", 1);
         ed.putString("infect_loc_lat", location.latitude.toString());
-        ed.putString("infect_loc_lat", location.longitude.toString());
+        ed.putString("infect_loc_lon", location.longitude.toString());
         ed.putLong("infect_time", location.time);
         ed.putString("infect_reason", dataSource);
 

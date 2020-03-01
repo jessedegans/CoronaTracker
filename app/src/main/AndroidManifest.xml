@@ -3,14 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.deGans.coronaTracker">
 
+    <!--
+         The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
+         Google Maps Android API v2, but you must specify either coarse or fine
+         location permissions for the 'MyLocation' functionality.
+    -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- Required if your app targets Android 10 (API level 29) or higher -->
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- Required if your app targets Android 10 (API level 29) or higher -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:allowBackup="true"
@@ -18,8 +21,23 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
+
+        <!--
+             The API key for Google Maps-based APIs is defined as a string resource.
+             (See the file "res/values/google_maps_api.xml").
+             Note that the API key is linked to the encryption key used to sign the APK.
+             You need a different API key for each encryption key, including the release key that is used to
+             sign the APK for publishing.
+             You can define the keys for the debug and release targets in src/debug/ and src/release/.
+        -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+        <activity android:name=".DonateActivity" />
+        <activity android:name=".MapActivity" />
         <activity
-            android:name="com.deGans.coronaTracker.MainActivity"
+            android:name=".MainActivity"
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,49 +45,51 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name="com.deGans.coronaTracker.BackgroundServices.CurrentLocationService"
-            android:enabled="true"
-            android:foregroundServiceType="location"
-            android:exported="true"
-            android:clearTaskOnLaunch="true"
-            android:excludeFromRecents="true"
-            android:launchMode="singleInstance"/>
-        <receiver
-            android:name="com.deGans.coronaTracker.BackgroundServices.RestartBroadcasts.CurrentLocationRestarterBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="StartMyServiceAtBootReceiver"
-            >
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
-                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </receiver>
-        <!-- Start the Service if applicable on boot -->
-        <receiver android:name="com.deGans.coronaTracker.BackgroundServices.LocServiceStarter">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
-        <service android:name="com.deGans.coronaTracker.BackgroundServices.RestartBroadcasts.JobService"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
         <service
-            android:name="com.deGans.coronaTracker.BackgroundServices.CoronaUpdatesService"
+            android:name=".BackgroundServices.CurrentLocationService"
+            android:clearTaskOnLaunch="true"
+            android:enabled="true"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:foregroundServiceType="location"
+            android:launchMode="singleInstance" />
+
+        <receiver
+            android:name=".BackgroundServices.RestartBroadcasts.CurrentLocationRestarterBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="StartMyServiceAtBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver> <!-- Start the Service if applicable on boot -->
+        <receiver android:name=".BackgroundServices.LocServiceStarter">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".BackgroundServices.RestartBroadcasts.JobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service
+            android:name=".BackgroundServices.CoronaUpdatesService"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
         <service
-            android:name="com.deGans.coronaTracker.BackgroundServices.InfectedService"
+            android:name=".BackgroundServices.InfectedService"
             android:enabled="true"
             android:exported="true" />
         <service
-            android:name="com.deGans.coronaTracker.BackgroundServices.HistoryBacktraceService"
+            android:name=".BackgroundServices.HistoryBacktraceService"
             android:enabled="true"
             android:exported="true" />
     </application>
