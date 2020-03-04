@@ -1,0 +1,174 @@
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:background="#DD613C"
+    tools:context=".CoronaSubmission"
+    android:id="@+id/mainBackground">
+
+
+    <TextView
+        android:id="@+id/corona_title"
+        android:layout_width="243dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="57dp"
+        android:layout_marginLeft="57dp"
+        android:layout_marginTop="81dp"
+        android:layout_marginEnd="60dp"
+        android:layout_marginRight="60dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="center"
+        android:text="Submission form"
+        android:textColor="#fff"
+        android:textSize="30sp" />
+
+    <TextView
+        android:id="@+id/corona_subtitle"
+        android:layout_width="315dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+
+        android:layout_gravity="bottom"
+        android:layout_marginStart="48dp"
+        android:layout_marginLeft="48dp"
+        android:layout_marginTop="152dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginRight="48dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="center"
+        android:text="Have corona? Share your location history with other people upon verification"
+        android:textAlignment="center"
+        android:textColor="#fff"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/name_label"
+        android:layout_width="293dp"
+        android:layout_height="29dp"
+
+        android:layout_below="@+id/name_field"
+        android:layout_alignParentStart="true"
+
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="59dp"
+        android:layout_marginLeft="59dp"
+        android:layout_marginTop="-62dp"
+        android:layout_marginEnd="59dp"
+        android:layout_marginRight="59dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="left"
+        android:text="*fill in none to stay anonymous"
+        android:textAlignment="center"
+        android:textColor="#fff"
+        android:textSize="12sp" />
+
+    <Button
+        android:id="@+id/submit_form"
+        android:layout_width="285dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="61dp"
+        android:layout_marginLeft="61dp"
+        android:layout_marginTop="512dp"
+        android:layout_marginEnd="66dp"
+        android:layout_marginRight="66dp"
+        android:background="#a53112"
+        android:fontFamily="@font/rubik_medium"
+        android:text="Submit"
+        android:textColor="#fff"
+        android:textSize="18sp" />
+
+    <EditText
+        android:id="@+id/phone_field"
+        android:layout_width="291dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/phone_label"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="54dp"
+        android:layout_marginLeft="54dp"
+        android:layout_marginTop="13dp"
+        android:layout_marginEnd="66dp"
+        android:layout_marginRight="66dp"
+        android:digits="0123456789+"
+        android:ems="10"
+        android:fontFamily="@font/rubik_medium"
+        android:inputType="phone"
+        android:hint="phone number"
+        android:textColor="#fff" />
+
+    <EditText
+        android:id="@+id/name_field"
+        android:layout_width="291dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/corona_subtitle"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="59dp"
+        android:layout_marginLeft="59dp"
+        android:layout_marginTop="77dp"
+        android:layout_marginEnd="61dp"
+        android:layout_marginRight="61dp"
+
+        android:ems="10"
+        android:fontFamily="@font/rubik_medium"
+        android:inputType="textPersonName"
+        android:hint="name"
+        android:textColor="#fff" />
+
+    <TextView
+        android:id="@+id/phone_label"
+        android:layout_width="wrap_content"
+        android:layout_height="54dp"
+
+        android:layout_below="@+id/name_field"
+        android:layout_alignParentStart="true"
+
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="61dp"
+        android:layout_marginLeft="61dp"
+        android:layout_marginTop="41dp"
+        android:layout_marginEnd="57dp"
+        android:layout_marginRight="57dp"
+        android:fontFamily="@font/rubik_medium"
+        android:gravity="left"
+        android:text="We need your phone number to verify that you are real and are not pulling some joke"
+        android:textAlignment="center"
+        android:textColor="#fff"
+        android:textSize="15sp" />
+
+
+</RelativeLayout>
+
+

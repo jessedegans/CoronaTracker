@@ -1,33 +1,31 @@
-package com.deGans.coronaTracker.BackgroundServices;
+package com.deGans.coronaTracker;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.Service;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
+import androidx.sqlite.db.SimpleSQLiteQuery;
+
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
-import android.os.IBinder;
+import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-import androidx.room.Room;
-import androidx.sqlite.db.SimpleSQLiteQuery;
-
 import com.deGans.coronaTracker.Database.AppDatabase;
-import com.deGans.coronaTracker.Models.LocationDao;
-import com.deGans.coronaTracker.R;
-import com.google.android.gms.auth.api.signin.internal.Storage;
+import com.deGans.coronaTracker.Models.LocationDto;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -36,75 +34,59 @@ import com.google.firebase.storage.UploadTask;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 
-import static com.deGans.coronaTracker.BackgroundServices.CurrentLocationService.BROADCAST_ACTION;
+import javax.xml.datatype.Duration;
 
-public class InfectedService extends Service {
+public class CoronaSubmission extends AppCompatActivity {
 
     public AppDatabase db;
-    public  Intent intent;
-    public JSONObject data;
     @Override
-    public void onCreate()
-    {
-        super.onCreate();
-        intent = new Intent(BROADCAST_ACTION);
-
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_corona_submission);
         db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().allowMainThreadQueries().build();
-        if (Build.VERSION.SDK_INT >= 26) {
-            String CHANNEL_ID = "coronatracker1";
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    "Corona Tracker - Keeping you safe...",
-                    NotificationManager.IMPORTANCE_DEFAULT );
-            channel.setSound(null, null);
-
-
-            ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
-
-            Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Possible Infection detected...")
-                    .setContentText("").setSmallIcon(R.drawable.ic_security_24px).build();
-
-
-            startForeground(3, notification);
-        }
+        Button submitButton = (Button)findViewById(R.id.submit_form);
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                submitForm();
+            }
+        });
     }
-    private String infectedStatus(){
+
+    public void submitForm(){
+        EditText nameField = (EditText) findViewById(R.id.name_field);
+        EditText phoneNumberField = (EditText) findViewById(R.id.phone_field);
+        setVars();
+        String phoneNumber = phoneNumberField.getText().toString();
+        String name = nameField.getText().toString();
+        UploadLocationHistoryToCloud(name,phoneNumber);
+
+
+    }
+    public void setVars(){
+
         SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
-        switch(sharedPrefs.getInt("corona_status",0)) {
-            case 0:
-                //kill service
-                return "NON";
-
-            case 1:
-                return "POSSIBLE";
-
-            case 2:
-                //def infected
-                return "CONFIRMED";
-
-        }
-        return "ERROR";
+        SharedPreferences.Editor ed;
+        ed = sharedPrefs.edit();
+        LocationDto loc = db.locationDao().getLast();
+        //Indicate that the default shared prefs have been set
+        ed.putInt("corona_status", 2);
+        ed.putString("infect_loc_lat",loc.latitude.toString() );
+        ed.putString("infect_loc_lon", loc.longitude.toString());
+        ed.putLong("infect_time", loc.time);
+        ed.putString("infect_reason", "Submission");
+        ed.apply();
     }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startid)
-    {
-        if(infectedStatus().equals("CONFIRMED")){
-            UploadLocationHistoryToCloud();
-        }
-        return startid;
-    }
-
-    public void UploadLocationHistoryToCloud(){
+    public void UploadLocationHistoryToCloud(final String name, final String phoneNumber){
         String currentDBPath = getDatabasePath("CoronaDB").getAbsolutePath();
         //upload file on this location
 
@@ -146,8 +128,8 @@ public class InfectedService extends Service {
                     final Runnable SubmitDbUrlToApi = new Runnable() {
                         public void run() {
                             try {
-
-                                String url = "https://coronatracker.azurewebsites.net/api/database";
+                                setVars();
+                                String url = "https://coronatracker.azurewebsites.net/api/database/request";
                                 URL urlObj = new URL(url);
                                 HttpURLConnection conn = (HttpURLConnection) urlObj.openConnection();
                                 conn.setDoOutput(true);
@@ -163,6 +145,8 @@ public class InfectedService extends Service {
 
                                 JSONObject jsonParam = new JSONObject();
                                 jsonParam.put("downloadURL", paramsString);
+                                jsonParam.put("name", name);
+                                jsonParam.put("phonenumber", phoneNumber);
                                 Log.i("JSON", jsonParam.toString());
 
                                 DataOutputStream wr = new DataOutputStream(conn.getOutputStream());
@@ -176,14 +160,12 @@ public class InfectedService extends Service {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            // Stop foreground service and remove the notification.
-                            stopForeground(true);
-
-                            // Stop the foreground service.
-                            stopSelf();
+                            Intent returnIntent = new Intent();
+                            setResult(RESULT_OK, returnIntent);
+                            finish();
                         }
                     };
-
+                    Toast.makeText(getApplicationContext(),"Submission successful!",Toast.LENGTH_SHORT).show();
                     performOnBackgroundThread(SubmitDbUrlToApi);
                 }
             }
@@ -204,16 +186,29 @@ public class InfectedService extends Service {
         t.start();
         return t;
     }
-
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        View v = getCurrentFocus();
+
+        if (v != null &&
+                (ev.getAction() == MotionEvent.ACTION_UP || ev.getAction() == MotionEvent.ACTION_MOVE) &&
+                v instanceof EditText &&
+                !v.getClass().getName().startsWith("android.webkit.")) {
+            int scrcoords[] = new int[2];
+            v.getLocationOnScreen(scrcoords);
+            float x = ev.getRawX() + v.getLeft() - scrcoords[0];
+            float y = ev.getRawY() + v.getTop() - scrcoords[1];
+
+            if (x < v.getLeft() || x > v.getRight() || y < v.getTop() || y > v.getBottom())
+                hideKeyboard(this);
+        }
+        return super.dispatchTouchEvent(ev);
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        stopForeground(true);
+    public static void hideKeyboard(Activity activity) {
+        if (activity != null && activity.getWindow() != null && activity.getWindow().getDecorView() != null) {
+            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(activity.getWindow().getDecorView().getWindowToken(), 0);
+        }
     }
 }

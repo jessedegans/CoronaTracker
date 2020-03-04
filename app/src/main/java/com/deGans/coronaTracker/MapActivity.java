@@ -65,6 +65,10 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         switch(sharedPrefs.getInt("corona_status",0)) {
             case 0:
                 LocationDto lastLoc = db.locationDao().getLast();
+                if(lastLoc == null){
+                    Location.setText("No location have been saved yet");
+                    return;
+                }
                 loc = new LatLng(lastLoc.latitude,lastLoc.longitude);
                 break;
             case 1:

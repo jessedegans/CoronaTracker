@@ -43,7 +43,6 @@ public class HistoryBacktraceService extends Service {
 //      should be callin firebase right here
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
-        Toast.makeText(getApplicationContext(),"Backtracing service is running...",Toast.LENGTH_SHORT).show();
         db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().build();
         if (Build.VERSION.SDK_INT >= 26) {
@@ -167,22 +166,30 @@ public class HistoryBacktraceService extends Service {
 
                         //the time between the current infected loc and the next qualifies the history loc (time wise)
                         LocationDto curInfectedLoc = infectedLocations.get(i);
-                        LocationDto nextInfectedLoc = infectedLocations.get(i + 1);
+                        LocationDto nextInfectedLoc = curInfectedLoc;
+                        if(i+1 == infectedLocations.size()){
+                            nextInfectedLoc = infectedLocations.get(i);
+                            nextInfectedLoc.time = nextInfectedLoc.time + 60000;
+                        } else{
+                            nextInfectedLoc = infectedLocations.get(i + 1);
+                        }
 
-                        if(recentLoc.time >= curInfectedLoc.time && recentLoc.time <= nextInfectedLoc.time){
+//
+//                        if(recentLoc.time >= curInfectedLoc.time && recentLoc.time <= nextInfectedLoc.time){
                             //infection possible time wise // otherwise you would just check the next one
 
 
                             //calculate distance so the distance that qualifies if the device could be infected
                             //depends on the time between the curInfectedLoc and the recentLoc.
-                            long timeBetweenInMillis = 0;
-                            //determine highest value
-                            if(curInfectedLoc.time <= recentLoc.time){
-                                timeBetweenInMillis = (recentLoc.time - curInfectedLoc.time);
-                            }
-                            if(curInfectedLoc.time >= recentLoc.time){
-                                timeBetweenInMillis = (curInfectedLoc.time - recentLoc.time);
-                            }
+                        long timeBetweenInMillis = 0;
+                        //determine highest value
+                        if(curInfectedLoc.time <= recentLoc.time){
+                            timeBetweenInMillis = (recentLoc.time - curInfectedLoc.time);
+                        }
+                        if(curInfectedLoc.time >= recentLoc.time){
+                            timeBetweenInMillis = (curInfectedLoc.time - recentLoc.time);
+                        }
+                        if(timeBetweenInMillis <= (60 * 1000 * 5)){
                             //standard
                             float distanceInMetersTreshold = 1000;
                             //seconds to millis is times 1000 right?
@@ -213,6 +220,7 @@ public class HistoryBacktraceService extends Service {
                             float distanceInMeters = results[0];
 
                             boolean isWithinRange = distanceInMeters < distanceInMetersTreshold;
+
                             if(isWithinRange){
                                 CoronaDetected(recentLoc, "DEVICE");
                             }

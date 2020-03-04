@@ -12,6 +12,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -27,7 +28,9 @@ public class DonateActivity extends AppCompatActivity {
         setBottomNavigationListeners();
 
         WebView wView = (WebView)findViewById(R.id.donateWebView);
-        wView.loadUrl("https://www.google.com");
+        wView.loadUrl("https://www.gofundme.com/f/corona-tracker");
+        WebSettings webSettings = wView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
 
     }
     private void setBottomNavigationListeners(){

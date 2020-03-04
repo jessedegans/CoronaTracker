@@ -47,7 +47,7 @@ public class CurrentLocationService extends Service
 //      should be callin firebase right here
         super.onCreate();
         intent = new Intent(BROADCAST_ACTION);
-        Toast.makeText(getApplicationContext(),"Corona Tracker is running...",Toast.LENGTH_SHORT).show();
+
         db = Room.databaseBuilder(getApplicationContext(),
                 AppDatabase.class, "CoronaDB").fallbackToDestructiveMigration().build();
         if (Build.VERSION.SDK_INT >= 26) {
@@ -83,10 +83,10 @@ public class CurrentLocationService extends Service
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
             listener = new MyLocationListener();
             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
             }
-            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, FIVE_MINUTES, 1000, listener);
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, FIVE_MINUTES, 1000, listener);
+            locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, TWO_MINUTES, 100, listener);
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, TWO_MINUTES, 100, listener);
         }
     }
 
@@ -104,8 +104,8 @@ public class CurrentLocationService extends Service
 
         // Check whether the new location fix is newer or older
         long timeDelta = location.getTime() - currentBestLocation.getTime();
-        boolean isSignificantlyNewer = timeDelta > FIVE_MINUTES;
-        boolean isSignificantlyOlder = timeDelta < -FIVE_MINUTES;
+        boolean isSignificantlyNewer = timeDelta > TWO_MINUTES;
+        boolean isSignificantlyOlder = timeDelta < -TWO_MINUTES;
         boolean isNewer = timeDelta > 0;
 
         // If it's been more than two minutes since the current location, use the new location

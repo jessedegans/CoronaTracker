@@ -22,6 +22,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import 	androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,7 +55,7 @@ import static com.wajahatkarim3.roomexplorer.RoomExplorerActivity.DATABASE_NAME_
 public class MainActivity extends AppCompatActivity {
 
     public static final String RECEIVE_JSON = "com.deGans.coronaTracker.RECEIVE_JSON";
-    Button btnSeeDb, btnGotCorona, btnConfirmCorona, btnFalseAlarm;
+    Button btnSeeDb, btnGotCorona, btnConfirmCorona, btnFalseAlarm,btnCoronaSubmission;
     Double Latitude, Longitude;
     String Provider;
     BroadcastReceiver receiver;
@@ -73,9 +74,22 @@ public class MainActivity extends AppCompatActivity {
         InitSubscribe();
         initTexts();
         setBottomNavigationListeners();
-        //debugButtons();
+
+        firstTime();
+        //  debugButtons();
 
 
+
+    }
+    private void firstTime(){
+        SharedPreferences prefs = getSharedPreferences("firsttime", MODE_PRIVATE);
+        boolean previouslyStarted = prefs.getBoolean("prevStarted", false);
+        if(!previouslyStarted) {
+            SharedPreferences.Editor edit = prefs.edit();
+            edit.putBoolean("prevStarted", Boolean.TRUE);
+            edit.apply();
+            startActivity(new Intent(this, WelcomeActivity.class));
+        }
     }
     private void initTexts(){
         //set right texts
@@ -117,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         BottomNavigationView itemView = findViewById(R.id.bottom_navigation);
         itemView.setSelectedItemId(R.id.overview);
+        initStyle();
+        initTexts();
     }
 
     private void initStyle(){
@@ -177,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
         switch(sharedPrefs.getInt("corona_status",0)) {
             case 0:
-                return "No contact with a corona patient detected";
+                return "No contact with a corona patient detected. \n \n if you have corona and would like to share your location history tap on the question mark";
 
             case 1:
                 return "If you feel sick, please seek medical attention. \n Please confirm so we can inform people who may have been in contact with you";
@@ -302,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
         btnGotCorona = (Button)findViewById(R.id.CoronaIhave);
         btnConfirmCorona = (Button)findViewById(R.id.confirmCorona);
         btnFalseAlarm = (Button)findViewById(R.id.falseAlarm);
+        btnCoronaSubmission = (Button)findViewById(R.id.coronaSubmission);
 
     }
 
@@ -319,6 +336,12 @@ public class MainActivity extends AppCompatActivity {
                 confirmCorona();
             }
         });
+        btnCoronaSubmission.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                CoronaSubmission();
+            }
+        });
     }
     public void falseAlarm(){
         SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
@@ -332,6 +355,21 @@ public class MainActivity extends AppCompatActivity {
 
         initStyle();
         initTexts();
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                initTexts();
+                initStyle();
+            }
+        }
+    }
+    public void CoronaSubmission() {
+        Intent coronaRequest = new Intent(this,CoronaSubmission.class );
+        startActivityForResult(coronaRequest,1);
     }
     public void confirmCorona(){
         SharedPreferences sharedPrefs = getSharedPreferences("corona", MODE_PRIVATE);
@@ -392,13 +430,13 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     } else{
-                        Toast.makeText(getApplicationContext(),"Service already running",Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(getApplicationContext(),"Service already running",Toast.LENGTH_SHORT).show();
                     }
 
 
 
                 } else {
-                    Toast.makeText(getApplicationContext(),"Permission Denied",Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getApplicationContext(),"Permission Denied",Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
